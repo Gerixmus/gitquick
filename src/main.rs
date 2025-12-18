@@ -22,7 +22,10 @@ enum Commands {
     #[command(about = "Add contents of new or changed files to the index")]
     Add,
     #[command(about = "Record changes to the repository")]
-    Commit,
+    Commit {
+        #[arg(long = "fixup", help = "Create a new branch")]
+        fixup: bool,
+    },
     #[command(about = "List, create, or delete branches")]
     Branch {
         #[arg(short = 'd', long = "delete", help = "Delete a branch")]
@@ -43,7 +46,7 @@ fn main() {
     let cli = Cli::parse();
     let config = init::load_config();
     let result = match &cli.command {
-        Some(Commands::Commit) => commit::run_commit(config.commit),
+        Some(Commands::Commit { fixup }) => commit::run_commit(config.commit, *fixup),
         Some(Commands::Branch {
             delete,
             force_delete,
