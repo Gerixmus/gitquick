@@ -2,9 +2,9 @@ use std::{fmt, process::Command};
 
 use inquire::{Confirm, Select};
 
-struct Commit {
-    hash: String,
-    message: String,
+pub struct Commit {
+    pub hash: String,
+    pub message: String,
 }
 
 impl fmt::Display for Commit {

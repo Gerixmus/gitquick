@@ -1,8 +1,14 @@
 use crate::{git_operations, init::Commit};
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
+use std::process::Command;
 
-pub fn run_commit(commit_config: Commit) -> Result<(), String> {
+pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
+    if fixup {
+        run_fixup()?;
+        return Ok(());
+    }
+
     let repo = git_operations::get_repository().map_err(|e| e.to_string())?;
 
     let (_changes, staged) = git_operations::get_changes(&repo);
@@ -92,6 +98,42 @@ pub fn run_commit(commit_config: Commit) -> Result<(), String> {
         println!("❌ Commit canceled or failed to get user confirmation.");
     }
 
+    Ok(())
+}
+
+fn run_fixup() -> Result<(), String> {
+    let output = Command::new("git")
+        .arg("log")
+        .arg("--pretty=format:%H%x00%s")
+        .output()
+        .map_err(|e| format!("Failed to log messages: {}", e))?;
+    let commits = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|s| {
+            let data: Vec<&str> = s.split('\0').collect();
+            crate::revert::Commit {
+                hash: data[0].to_string(),
+                message: data[1].to_string(),
+            }
+        })
+        .collect();
+
+    let selected_commit = Select::new("Select commit to fixup:", commits)
+        .prompt()
+        .map_err(|e| format!("Failed to fixup commit: {}", e))?;
+    let fixup_output = Command::new("git")
+        .arg("commit")
+        .arg("--fixup")
+        .arg(selected_commit.hash)
+        .output()
+        .map_err(|e| format!("Failed to fixup commit: {}", e))?;
+    if !fixup_output.status.success() {
+        return Err(format!(
+            "git commit --fixup failed:\n{}",
+            String::from_utf8_lossy(&fixup_output.stdout)
+        ));
+    }
+    println!("✅ Fixup successful!");
     Ok(())
 }
 
