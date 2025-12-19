@@ -1,17 +1,8 @@
-use std::{fmt, process::Command};
+use std::process::Command;
 
 use inquire::{Confirm, Select};
 
-pub struct Commit {
-    pub hash: String,
-    pub message: String,
-}
-
-impl fmt::Display for Commit {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
+use crate::git_operations::CommitLog;
 
 pub fn run_revert() -> Result<(), String> {
     let output = Command::new("git")
@@ -23,7 +14,7 @@ pub fn run_revert() -> Result<(), String> {
         .lines()
         .map(|s| {
             let data: Vec<&str> = s.split('\0').collect();
-            Commit {
+            CommitLog {
                 hash: data[0].to_string(),
                 message: data[1].to_string(),
             }

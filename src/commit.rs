@@ -1,4 +1,4 @@
-use crate::{git_operations, init::Commit};
+use crate::{git_operations::{self, CommitLog}, init::Commit};
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
 use std::process::Command;
@@ -111,7 +111,7 @@ fn run_fixup() -> Result<(), String> {
         .lines()
         .map(|s| {
             let data: Vec<&str> = s.split('\0').collect();
-            crate::revert::Commit {
+            CommitLog {
                 hash: data[0].to_string(),
                 message: data[1].to_string(),
             }

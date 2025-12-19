@@ -9,6 +9,17 @@ pub struct Change {
     status: git2::Status,
 }
 
+pub struct CommitLog {
+    pub hash: String,
+    pub message: String,
+}
+
+impl fmt::Display for CommitLog {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
 impl fmt::Display for Change {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let status_str = match self.status {
