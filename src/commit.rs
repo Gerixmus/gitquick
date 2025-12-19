@@ -1,4 +1,7 @@
-use crate::{git_operations::{self, CommitLog}, init::Commit};
+use crate::{
+    git_operations::{commit, get_changes, get_current_branch, get_log, get_repository},
+    init::Commit,
+};
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
 use std::process::Command;
@@ -9,9 +12,9 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
         return Ok(());
     }
 
-    let repo = git_operations::get_repository().map_err(|e| e.to_string())?;
+    let repo = get_repository().map_err(|e| e.to_string())?;
 
-    let (_changes, staged) = git_operations::get_changes(&repo);
+    let (_changes, staged) = get_changes(&repo);
 
     if staged.is_empty() {
         println!("No staged files found.");
@@ -33,7 +36,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
 
     let ticket = if commit_config.ticket_suffix {
         let re = Regex::new(r"[A-Z]+-[0-9]+").unwrap();
-        let branch = git_operations::get_current_branch().unwrap();
+        let branch = get_current_branch().unwrap();
         re.find(&branch)
             .map(|regex_match| format!(" ({})", regex_match.as_str()))
             .unwrap_or_default()
@@ -91,8 +94,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
         .map_err(|e| format!("Failed to get confirmation: {}", e))?;
 
     if should_commit {
-        git_operations::commit(repo, index, message)
-            .map_err(|e| format!("❌ Commit failed: {}", e))?;
+        commit(repo, index, message).map_err(|e| format!("❌ Commit failed: {}", e))?;
         println!("✅ Commit successful!");
     } else {
         println!("❌ Commit canceled or failed to get user confirmation.");
@@ -102,21 +104,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
 }
 
 fn run_fixup() -> Result<(), String> {
-    let output = Command::new("git")
-        .arg("log")
-        .arg("--pretty=format:%H%x00%s")
-        .output()
-        .map_err(|e| format!("Failed to log messages: {}", e))?;
-    let commits = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|s| {
-            let data: Vec<&str> = s.split('\0').collect();
-            CommitLog {
-                hash: data[0].to_string(),
-                message: data[1].to_string(),
-            }
-        })
-        .collect();
+    let commits = get_log()?;
 
     let selected_commit = Select::new("Select commit to fixup:", commits)
         .prompt()
