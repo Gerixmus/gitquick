@@ -1,34 +1,11 @@
-use std::{fmt, process::Command};
+use std::process::Command;
 
 use inquire::{Confirm, Select};
 
-pub struct Commit {
-    pub hash: String,
-    pub message: String,
-}
-
-impl fmt::Display for Commit {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message)
-    }
-}
+use crate::git_operations::get_log;
 
 pub fn run_revert() -> Result<(), String> {
-    let output = Command::new("git")
-        .arg("log")
-        .arg("--pretty=format:%H%x00%s")
-        .output()
-        .map_err(|e| format!("Failed to log messages: {}", e))?;
-    let commits = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .map(|s| {
-            let data: Vec<&str> = s.split('\0').collect();
-            Commit {
-                hash: data[0].to_string(),
-                message: data[1].to_string(),
-            }
-        })
-        .collect();
+    let commits = get_log()?;
 
     let selected_commit = Select::new("Select commit to revert:", commits)
         .prompt()

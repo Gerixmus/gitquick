@@ -9,6 +9,17 @@ pub struct Change {
     status: git2::Status,
 }
 
+pub struct CommitLog {
+    pub hash: String,
+    pub message: String,
+}
+
+impl fmt::Display for CommitLog {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
 impl fmt::Display for Change {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let status_str = match self.status {
@@ -42,6 +53,25 @@ impl fmt::Display for BranchInfo {
         };
         write!(f, "{}{}{}", current_marker, branch_name, upstream_marker)
     }
+}
+
+pub fn get_log() -> Result<Vec<CommitLog>, String> {
+    let output = Command::new("git")
+        .arg("log")
+        .arg("--pretty=format:%H%x00%s")
+        .output()
+        .map_err(|e| format!("Failed to log messages: {}", e))?;
+    let commits = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|s| {
+            let data: Vec<&str> = s.split('\0').collect();
+            CommitLog {
+                hash: data[0].to_string(),
+                message: data[1].to_string(),
+            }
+        })
+        .collect();
+    Ok(commits)
 }
 
 pub fn get_branches() -> Result<Vec<BranchInfo>, git2::Error> {
