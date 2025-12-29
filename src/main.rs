@@ -6,6 +6,7 @@ mod checkout;
 mod commit;
 mod git_operations;
 mod init;
+mod rebase;
 mod revert;
 
 #[derive(Parser)]
@@ -40,6 +41,15 @@ enum Commands {
     },
     #[command(about = "Revert some existing commits")]
     Revert,
+    #[command(about = "Reapply commits on top of another base tip")]
+    Rebase {
+        #[arg(
+            short = 'i',
+            long = "interactive",
+            help = "Let user edit list before rebasing"
+        )]
+        interactive: bool,
+    },
 }
 
 fn main() {
@@ -57,6 +67,7 @@ fn main() {
         Some(Commands::Revert) => revert::run_revert(),
         Some(Commands::Init) => init::run_config(),
         Some(Commands::Add) => add::stage_files(),
+        Some(Commands::Rebase { interactive }) => rebase::run_rebase(*interactive),
         None => {
             Cli::command().print_help().unwrap();
             Ok(())
