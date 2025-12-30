@@ -19,23 +19,23 @@ pub struct Config {
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
 pub struct Commit {
-    pub conventional_commits: bool,
-    pub ticket_suffix: bool,
+    pub conventional: bool,
+    pub ticket: bool,
     pub types: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
 pub struct Branch {
-    pub conventional_branches: bool,
+    pub conventional: bool,
     pub types: Vec<String>,
 }
 
 impl Default for Commit {
     fn default() -> Self {
         Self {
-            conventional_commits: false,
-            ticket_suffix: false,
+            conventional: false,
+            ticket: false,
             types: vec![
                 "build".into(),
                 "ci".into(),
@@ -55,7 +55,7 @@ impl Default for Commit {
 impl Default for Branch {
     fn default() -> Self {
         Self {
-            conventional_branches: false,
+            conventional: false,
             types: vec![
                 "feature".into(),
                 "bugfix".into(),
@@ -90,17 +90,17 @@ pub fn run_config(args: &ConfigArgs) -> Result<(), String> {
 
     match section {
         "commit" => match field {
-            "conventional_commits" => set_bool(&mut config.commit.conventional_commits, &args.value)?,
-            "ticket_suffix" => set_bool(&mut config.commit.ticket_suffix, &args.value)?,
+            "conventional" => set_bool(&mut config.commit.conventional, &args.value)?,
+            "ticket" => set_bool(&mut config.commit.ticket, &args.value)?,
             "types" => set_vec(&mut config.commit.types, &args.value)?,
             _ => return Err(format!("Unknown commit setting '{}'", field)),
         },
 
         "branch" => match field {
-            "conventional_branches" => set_bool(&mut config.branch.conventional_branches, &args.value)?,
+            "conventional" => set_bool(&mut config.branch.conventional, &args.value)?,
             "types" => set_vec(&mut config.branch.types, &args.value)?,
             _ => return Err(format!("Unknown branch setting '{}'", field)),
-        }
+        },
 
         _ => return Err(format!("Unknown section '{}'", section)),
     }
