@@ -1,10 +1,10 @@
-use crate::{git_operations, init::Branch};
+use crate::{config::Branch, git_operations};
 use inquire::{Confirm, Select};
 use regex::Regex;
 
 pub fn run_checkout(branch_config: Branch, create_new: bool) -> Result<(), String> {
     if create_new {
-        let branch_type = if branch_config.conventional_branches {
+        let branch_type = if branch_config.conventional {
             let selected_type = Select::new("Select branch type", branch_config.types)
                 .prompt()
                 .map_err(|e| format!("Prompt error: {}", e))?;

@@ -1,6 +1,6 @@
 use crate::{
+    config::Commit,
     git_operations::{commit, get_changes, get_current_branch, get_log, get_repository},
-    init::Commit,
 };
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
@@ -25,7 +25,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
         .index()
         .map_err(|e| format!("Error accessing index: {}", e))?;
 
-    let mut commit_header = if commit_config.conventional_commits {
+    let mut commit_header = if commit_config.conventional {
         let type_and_scope = get_type_and_scope(commit_config.types)
             .map_err(|e| format!("An error occurred: {}", e))
             .map_err(|e| format!("Failed to get confirmation: {}", e))?;
@@ -34,7 +34,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
         String::new()
     };
 
-    let ticket = if commit_config.ticket_suffix {
+    let ticket = if commit_config.ticket {
         let re = Regex::new(r"[A-Z]+-[0-9]+").unwrap();
         let branch = get_current_branch().unwrap();
         re.find(&branch)
@@ -48,7 +48,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
         .prompt()
         .map_err(|e| format!("An error occurred: {}", e))?;
 
-    let body = if commit_config.conventional_commits {
+    let body = if commit_config.conventional {
         let mut body_text = Text::new("Body:")
             .prompt()
             .map_err(|e| format!("An error occurred: {}", e))?;
@@ -60,7 +60,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
         String::new()
     };
 
-    let footer = if commit_config.conventional_commits {
+    let footer = if commit_config.conventional {
         let is_breaking_change = Confirm::new("BREAKING CHANGE?")
             .with_default(false)
             .prompt()

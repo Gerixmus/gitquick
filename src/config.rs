@@ -5,8 +5,9 @@ use std::{
 };
 
 use directories::ProjectDirs;
-use inquire::Confirm;
 use serde::{Deserialize, Serialize};
+
+use crate::ConfigArgs;
 
 #[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(default)]
@@ -18,23 +19,23 @@ pub struct Config {
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
 pub struct Commit {
-    pub conventional_commits: bool,
-    pub ticket_suffix: bool,
+    pub conventional: bool,
+    pub ticket: bool,
     pub types: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
 pub struct Branch {
-    pub conventional_branches: bool,
+    pub conventional: bool,
     pub types: Vec<String>,
 }
 
 impl Default for Commit {
     fn default() -> Self {
         Self {
-            conventional_commits: false,
-            ticket_suffix: false,
+            conventional: false,
+            ticket: false,
             types: vec![
                 "build".into(),
                 "ci".into(),
@@ -54,7 +55,7 @@ impl Default for Commit {
 impl Default for Branch {
     fn default() -> Self {
         Self {
-            conventional_branches: false,
+            conventional: false,
             types: vec![
                 "feature".into(),
                 "bugfix".into(),
@@ -72,15 +73,53 @@ pub fn load_config() -> Config {
     if let Ok(config_content) = fs::read_to_string(&config_path) {
         toml::from_str(&config_content).expect("Failed to parse config")
     } else {
-        Config::default()
+        let config = Config::default();
+        let _ = save_config(&config, &config_path);
+        config
     }
 }
 
-pub fn run_config() -> Result<(), String> {
+pub fn run_config(args: &ConfigArgs) -> Result<(), String> {
+    let mut config = load_config();
     let config_path = get_config_path();
-    let config = create_config()?;
+    let setting: Vec<&str> = args.key.split('.').collect();
+    if setting.len() != 2 {
+        return Err("Key format must be <section>.<field>".into());
+    }
+    let (section, field) = (setting[0], setting[1]);
+
+    match section {
+        "commit" => match field {
+            "conventional" => set_bool(&mut config.commit.conventional, &args.value)?,
+            "ticket" => set_bool(&mut config.commit.ticket, &args.value)?,
+            "types" => set_vec(&mut config.commit.types, &args.value)?,
+            _ => return Err(format!("Unknown commit setting '{}'", field)),
+        },
+
+        "branch" => match field {
+            "conventional" => set_bool(&mut config.branch.conventional, &args.value)?,
+            "types" => set_vec(&mut config.branch.types, &args.value)?,
+            _ => return Err(format!("Unknown branch setting '{}'", field)),
+        },
+
+        _ => return Err(format!("Unknown section '{}'", section)),
+    }
     save_config(&config, &config_path).map_err(|e| format!("Failed to save config: {}", e))?;
     println!("✅ Config created successfuly!");
+    Ok(())
+}
+
+fn set_bool(target: &mut bool, value: &str) -> Result<(), String> {
+    match value.to_lowercase().as_str() {
+        "1" | "true" => *target = true,
+        "0" | "false" => *target = false,
+        _ => return Err("Value must be boolean".into()),
+    }
+    Ok(())
+}
+
+fn set_vec(target: &mut Vec<String>, value: &str) -> Result<(), String> {
+    *target = value.split(',').map(|s| s.trim().to_string()).collect();
     Ok(())
 }
 
@@ -99,43 +138,4 @@ fn save_config(config: &Config, config_path: &PathBuf) -> io::Result<()> {
     let mut file = fs::File::create(config_path)?;
     file.write_all(content.as_bytes())?;
     Ok(())
-}
-
-struct Setting<'a> {
-    label: &'a str,
-    get: fn(&Config) -> bool,
-    set: fn(&mut Config, bool),
-}
-
-fn create_config() -> Result<Config, String> {
-    let mut config = Config::default();
-
-    let mut settings = [
-        Setting {
-            label: "Use conventional commits?",
-            get: |conf| conf.commit.conventional_commits,
-            set: |conf, val| conf.commit.conventional_commits = val,
-        },
-        Setting {
-            label: "Use ticket suffix?",
-            get: |conf| conf.commit.ticket_suffix,
-            set: |conf, val| conf.commit.ticket_suffix = val,
-        },
-        Setting {
-            label: "Use conventional branches?",
-            get: |conf| conf.branch.conventional_branches,
-            set: |conf, val| conf.branch.conventional_branches = val,
-        },
-    ];
-
-    for setting in settings.iter_mut() {
-        let answer = Confirm::new(setting.label)
-            .with_default((setting.get)(&config))
-            .prompt()
-            .map_err(|e| format!("An error occurred during selection: {}", e))?;
-
-        (setting.set)(&mut config, answer);
-    }
-
-    Ok(config)
 }
