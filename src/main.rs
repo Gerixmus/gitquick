@@ -1,11 +1,11 @@
-use clap::{CommandFactory, Parser, Subcommand};
+use clap::{Args, CommandFactory, Parser, Subcommand};
 
 mod add;
 mod branch;
 mod checkout;
 mod commit;
+mod config;
 mod git_operations;
-mod init;
 mod rebase;
 mod revert;
 
@@ -16,10 +16,16 @@ struct Cli {
     command: Option<Commands>,
 }
 
+#[derive(Args)]
+struct ConfigArgs {
+    key: String,
+    value: String,
+}
+
 #[derive(Subcommand)]
 enum Commands {
-    #[command(about = "Configure the tool")]
-    Init,
+    #[command(about = "Get and set options")]
+    Config(ConfigArgs),
     #[command(about = "Add contents of new or changed files to the index")]
     Add,
     #[command(about = "Record changes to the repository")]
@@ -54,7 +60,7 @@ enum Commands {
 
 fn main() {
     let cli = Cli::parse();
-    let config = init::load_config();
+    let config = config::load_config();
     let result = match &cli.command {
         Some(Commands::Commit { fixup }) => commit::run_commit(config.commit, *fixup),
         Some(Commands::Branch {
@@ -65,7 +71,7 @@ fn main() {
             checkout::run_checkout(config.branch, *create_new)
         }
         Some(Commands::Revert) => revert::run_revert(),
-        Some(Commands::Init) => init::run_config(),
+        Some(Commands::Config(args)) => config::run_config(args),
         Some(Commands::Add) => add::stage_files(),
         Some(Commands::Rebase { interactive }) => rebase::run_rebase(*interactive),
         None => {

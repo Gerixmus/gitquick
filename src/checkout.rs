@@ -1,4 +1,4 @@
-use crate::{git_operations, init::Branch};
+use crate::{config::Branch, git_operations};
 use inquire::{Confirm, Select};
 use regex::Regex;
 

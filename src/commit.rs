@@ -1,6 +1,6 @@
 use crate::{
+    config::Commit,
     git_operations::{commit, get_changes, get_current_branch, get_log, get_repository},
-    init::Commit,
 };
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
