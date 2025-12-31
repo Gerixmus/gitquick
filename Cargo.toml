@@ -2,6 +2,11 @@
 name = "gitquick"
 version = "0.2.0"
 edition = "2021"
+license = "Apache-2.0"
+description = "Command line tool that simplifies common git workflows."
+homepage = "https://www.gitquick.dev/"
+repository = "https://github.com/Gerixmus/gitquick"
+readme = "README.md"
 
 [[bin]]
 name = "gq"
