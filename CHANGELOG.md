@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/Gerixmus/gitquick/compare/v0.2.0...v0.2.1) (2026-01-23)
+
+
+### Bug Fixes
+
+* correct add message ([#74](https://github.com/Gerixmus/gitquick/issues/74)) ([7b0cc08](https://github.com/Gerixmus/gitquick/commit/7b0cc08ce48d57ea61ff068372e3e17f8f979add))
+
 ## [0.2.0](https://github.com/Gerixmus/gitquick/compare/v0.1.13...v0.2.0) (2025-12-30)
 
 
