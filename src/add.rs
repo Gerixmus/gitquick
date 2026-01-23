@@ -13,7 +13,7 @@ pub fn stage_files() -> Result<(), String> {
 
     let mut selected_files = Vec::<Change>::new();
 
-    let selected_unstaged = MultiSelect::new("Select changes to commit:", changes)
+    let selected_unstaged = MultiSelect::new("Select changes to add:", changes)
         .prompt()
         .map_err(|e| format!("An error occurred during selection: {}", e))?;
 
