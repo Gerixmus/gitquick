@@ -6,6 +6,7 @@ mod checkout;
 mod commit;
 mod config;
 mod git_operations;
+mod log;
 mod rebase;
 mod revert;
 
@@ -47,6 +48,8 @@ enum Commands {
     },
     #[command(about = "Revert some existing commits")]
     Revert,
+    #[command(about = "List commits")]
+    Log,
     #[command(about = "Reapply commits on top of another base tip")]
     Rebase {
         #[arg(
@@ -73,6 +76,7 @@ fn main() {
         Some(Commands::Revert) => revert::run_revert(),
         Some(Commands::Config(args)) => config::run_config(args),
         Some(Commands::Add) => add::stage_files(),
+        Some(Commands::Log) => log::run_log(),
         Some(Commands::Rebase { interactive }) => rebase::run_rebase(*interactive),
         None => {
             Cli::command().print_help().unwrap();
