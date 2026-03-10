@@ -18,9 +18,9 @@ pub fn run_rebase(interactive: bool) -> Result<(), String> {
     }
 
     let commit_log = get_log()?;
-    let selected_commit = Select::new("Select commit to revert:", commit_log)
+    let selected_commit = Select::new("Select commit to rebase:", commit_log)
         .prompt()
-        .map_err(|e| format!("Failed to revert commit: {}", e))?;
+        .map_err(|e| format!("Failed to rebase commit: {}", e))?;
 
     rebase_command.arg(selected_commit.hash);
     rebase_command
