@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.1](https://github.com/Gerixmus/gitquick/compare/v0.2.0...v0.2.1) (2026-03-28)
+
+
+### Features
+
+* **commit:** add amend flag ([#77](https://github.com/Gerixmus/gitquick/issues/77)) ([bbce079](https://github.com/Gerixmus/gitquick/commit/bbce0796c15117d69a51ab2200ad3e9a2d71427c))
+
+
+### Bug Fixes
+
+* correct add message ([#74](https://github.com/Gerixmus/gitquick/issues/74)) ([7b0cc08](https://github.com/Gerixmus/gitquick/commit/7b0cc08ce48d57ea61ff068372e3e17f8f979add))
+* correct message while performing rebase ([#76](https://github.com/Gerixmus/gitquick/issues/76)) ([e365eac](https://github.com/Gerixmus/gitquick/commit/e365eac6e853562e3cd3b9e74ef06be0fd1a7acd))
+
 ## [0.2.0](https://github.com/Gerixmus/gitquick/compare/v0.1.13...v0.2.0) (2025-12-30)
 
 
