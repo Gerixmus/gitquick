@@ -1,12 +1,14 @@
 use crate::{
     config::Commit,
-    git_operations::{commit, get_changes, get_current_branch, get_log, get_repository},
+    git_operations::{
+        commit, commit_amend, get_changes, get_current_branch, get_log, get_repository,
+    },
 };
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
 use std::process::Command;
 
-pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
+pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(), String> {
     if fixup {
         run_fixup()?;
         return Ok(());
@@ -93,7 +95,10 @@ pub fn run_commit(commit_config: Commit, fixup: bool) -> Result<(), String> {
         .prompt()
         .map_err(|e| format!("Failed to get confirmation: {}", e))?;
 
-    if should_commit {
+    if should_commit && amend {
+        commit_amend(&message).map_err(|e| format!("❌ Commit failed: {}", e))?;
+        println!("✅ Commit successful!");
+    } else if should_commit {
         commit(repo, index, message).map_err(|e| format!("❌ Commit failed: {}", e))?;
         println!("✅ Commit successful!");
     } else {

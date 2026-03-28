@@ -191,6 +191,22 @@ pub fn commit(
     Ok(())
 }
 
+pub fn commit_amend(message: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let output = Command::new("git")
+        .arg("commit")
+        .arg("--amend")
+        .arg("-m")
+        .arg(message)
+        .output()?;
+
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        Err(Box::new(std::io::Error::other(err.to_string())))
+    } else {
+        Ok(())
+    }
+}
+
 pub fn checkout_branch(branch: &str) -> Result<(), git2::Error> {
     let repo = get_repository()?;
 
