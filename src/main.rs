@@ -32,6 +32,8 @@ enum Commands {
     Commit {
         #[arg(long = "fixup", help = "Create a new branch")]
         fixup: bool,
+        #[arg(long = "amend", help = "Create a new branch")]
+        amend: bool,
     },
     #[command(about = "List, create, or delete branches")]
     Branch {
@@ -62,7 +64,9 @@ fn main() {
     let cli = Cli::parse();
     let config = config::load_config();
     let result = match &cli.command {
-        Some(Commands::Commit { fixup }) => commit::run_commit(config.commit, *fixup),
+        Some(Commands::Commit { fixup, amend }) => {
+            commit::run_commit(config.commit, *fixup, *amend)
+        }
         Some(Commands::Branch {
             delete,
             force_delete,
