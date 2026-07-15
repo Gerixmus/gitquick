@@ -1,18 +1,9 @@
-use crate::{config::Branch, git_operations};
+use crate::git_operations;
 use inquire::{Confirm, Select};
 use regex::Regex;
 
-pub fn run_checkout(branch_config: Branch, create_new: bool) -> Result<(), String> {
+pub fn run_checkout(create_new: bool) -> Result<(), String> {
     if create_new {
-        let branch_type = if branch_config.conventional {
-            let selected_type = Select::new("Select branch type", branch_config.types)
-                .prompt()
-                .map_err(|e| format!("Prompt error: {}", e))?;
-            format!("{}/", selected_type)
-        } else {
-            "".to_string()
-        };
-
         let branch_input = inquire::Text::new("Enter branch name")
             .prompt()
             .map_err(|e| format!("Prompt error: {}", e))?;
@@ -20,17 +11,15 @@ pub fn run_checkout(branch_config: Branch, create_new: bool) -> Result<(), Strin
         let re = Regex::new(r" +").unwrap();
         let branch_name = re.replace_all(branch_input.trim(), "-");
 
-        let full_branch = format!("{}{}", branch_type, branch_name);
-
         let should_checkout =
-            Confirm::new(&format!("Create and checkout to: \"{}\"?", full_branch))
+            Confirm::new(&format!("Create and checkout to: \"{}\"?", branch_name))
                 .with_default(true)
                 .prompt()
                 .map_err(|e| format!("Failed to get confirmation: {}", e))?;
 
         if should_checkout {
-            git_operations::create_and_checkout_branch(&full_branch).map_err(|e| e.to_string())?;
-            println!("✅ Created and switched to new branch '{}'", full_branch);
+            git_operations::create_and_checkout_branch(&branch_name).map_err(|e| e.to_string())?;
+            println!("✅ Created and switched to new branch '{}'", branch_name);
         } else {
             println!("❌ Commit canceled or failed to get user confirmation.");
         }

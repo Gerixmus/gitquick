@@ -71,9 +71,7 @@ fn main() {
             delete,
             force_delete,
         }) => branch::run_branch(*delete, *force_delete),
-        Some(Commands::Checkout { create_new }) => {
-            checkout::run_checkout(config.branch, *create_new)
-        }
+        Some(Commands::Checkout { create_new }) => checkout::run_checkout(*create_new),
         Some(Commands::Revert) => revert::run_revert(),
         Some(Commands::Config(args)) => config::run_config(args),
         Some(Commands::Add) => add::stage_files(),
