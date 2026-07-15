@@ -13,7 +13,6 @@ use crate::ConfigArgs;
 #[serde(default)]
 pub struct Config {
     pub commit: Commit,
-    pub branch: Branch,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -21,13 +20,6 @@ pub struct Config {
 pub struct Commit {
     pub conventional: bool,
     pub ticket: bool,
-    pub types: Vec<String>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(default)]
-pub struct Branch {
-    pub conventional: bool,
     pub types: Vec<String>,
 }
 
@@ -47,21 +39,6 @@ impl Default for Commit {
                 "style".into(),
                 "test".into(),
                 "revert".into(),
-            ],
-        }
-    }
-}
-
-impl Default for Branch {
-    fn default() -> Self {
-        Self {
-            conventional: false,
-            types: vec![
-                "feature".into(),
-                "bugfix".into(),
-                "hotfix".into(),
-                "release".into(),
-                "chore".into(),
             ],
         }
     }
@@ -95,13 +72,6 @@ pub fn run_config(args: &ConfigArgs) -> Result<(), String> {
             "types" => set_vec(&mut config.commit.types, &args.value)?,
             _ => return Err(format!("Unknown commit setting '{}'", field)),
         },
-
-        "branch" => match field {
-            "conventional" => set_bool(&mut config.branch.conventional, &args.value)?,
-            "types" => set_vec(&mut config.branch.types, &args.value)?,
-            _ => return Err(format!("Unknown branch setting '{}'", field)),
-        },
-
         _ => return Err(format!("Unknown section '{}'", section)),
     }
     save_config(&config, &config_path).map_err(|e| format!("Failed to save config: {}", e))?;
