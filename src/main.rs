@@ -32,7 +32,7 @@ enum Commands {
     Commit {
         #[arg(long = "fixup", help = "Create a new branch")]
         fixup: bool,
-        #[arg(long = "amend", help = "Create a new branch")]
+        #[arg(long = "amend", help = "Modify most recent commit")]
         amend: bool,
     },
     #[command(about = "List, create, or delete branches")]
