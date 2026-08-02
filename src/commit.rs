@@ -4,9 +4,10 @@ use crate::{
         commit, commit_amend, get_changes, get_current_branch, get_log, get_repository,
     },
 };
+use crossterm::terminal;
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
-use std::process::Command;
+use std::{error::Error, process::Command};
 
 pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(), String> {
     if fixup {
@@ -88,7 +89,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(),
         commit_header, user_input, ticket, body, footer
     );
 
-    print_in_box(&message);
+    print_in_box(&message).map_err(|e| format!("Formatting failed: {}", e))?;
 
     let should_commit = Confirm::new("Commit?")
         .with_default(true)
@@ -130,15 +131,47 @@ fn run_fixup() -> Result<(), String> {
     Ok(())
 }
 
-fn print_in_box(message: &str) {
+fn print_in_box(message: &str) -> Result<(), Box<dyn Error>> {
     let lines: Vec<&str> = message.lines().collect();
-    let max_len = lines.iter().map(|line| line.len()).max().unwrap_or(0);
+    let mut max_len = lines.iter().map(|line| line.len()).max().unwrap_or(0);
+    let (width, _) = terminal::size()?;
+    let width = usize::from(width);
+
+    if max_len >= width {
+        max_len = width - 4;
+    }
+
+    let mut new_lines: Vec<&str> = vec![];
+    for line in lines {
+        if line.len() < width - 4 {
+            new_lines.push(line);
+        } else {
+            let mut result = Vec::new();
+            let mut start = 0;
+            let mut count = 0;
+
+            for (i, _) in line.char_indices() {
+                if count == max_len {
+                    result.push(&line[start..i]);
+                    start = i;
+                    count = 0;
+                }
+                count += 1;
+            }
+
+            if start < line.len() {
+                result.push(&line[start..]);
+            }
+            new_lines.append(&mut result);
+        }
+    }
 
     println!("┌{}┐", "─".repeat(max_len + 2));
-    for line in lines {
+    for line in new_lines {
         println!("│ {:width$} │", line, width = max_len);
     }
     println!("└{}┘", "─".repeat(max_len + 2));
+    Ok(())
 }
 
 fn get_type_and_scope(commit_types: Vec<String>) -> Result<String, String> {
