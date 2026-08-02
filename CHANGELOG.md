@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.3.0](https://github.com/Gerixmus/gitquick/compare/v0.2.0...v0.3.0) (2026-08-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* branch settings are no longer used
+
+### Features
+
+* **commit:** add amend flag ([#77](https://github.com/Gerixmus/gitquick/issues/77)) ([bbce079](https://github.com/Gerixmus/gitquick/commit/bbce0796c15117d69a51ab2200ad3e9a2d71427c))
+
+
+### Bug Fixes
+
+* **commit:** correctly display longer messages ([#79](https://github.com/Gerixmus/gitquick/issues/79)) ([c8d3abe](https://github.com/Gerixmus/gitquick/commit/c8d3abee4499869f5240de0f5247ded33cdaa2dc))
+* correct add message ([#74](https://github.com/Gerixmus/gitquick/issues/74)) ([7b0cc08](https://github.com/Gerixmus/gitquick/commit/7b0cc08ce48d57ea61ff068372e3e17f8f979add))
+* correct message while performing rebase ([#76](https://github.com/Gerixmus/gitquick/issues/76)) ([e365eac](https://github.com/Gerixmus/gitquick/commit/e365eac6e853562e3cd3b9e74ef06be0fd1a7acd))
+
+
+### Code Refactoring
+
+* remove branch settings from config ([#78](https://github.com/Gerixmus/gitquick/issues/78)) ([ced71fd](https://github.com/Gerixmus/gitquick/commit/ced71fd936691141f7ecf058dbd708babdeedbef))
+
 ## [0.2.0](https://github.com/Gerixmus/gitquick/compare/v0.1.13...v0.2.0) (2025-12-30)
 
 
