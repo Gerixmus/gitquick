@@ -8,6 +8,7 @@ mod config;
 mod git_operations;
 mod rebase;
 mod revert;
+mod stash;
 
 #[derive(Parser)]
 #[command(name = "gq", version = env!("CARGO_PKG_VERSION"), about = "GitQuick: Simplify your git workflow")]
@@ -20,6 +21,18 @@ struct Cli {
 struct ConfigArgs {
     key: String,
     value: String,
+}
+
+#[derive(Debug, Subcommand)]
+enum StashCommands {
+    Push,
+}
+
+#[derive(Args)]
+#[command(args_conflicts_with_subcommands = true)]
+struct StashArgs {
+    #[command(subcommand)]
+    command: Option<StashCommands>,
 }
 
 #[derive(Subcommand)]
@@ -58,6 +71,8 @@ enum Commands {
         )]
         interactive: bool,
     },
+    #[command(about = "todo")]
+    Stash(StashArgs),
 }
 
 fn main() {
@@ -76,6 +91,10 @@ fn main() {
         Some(Commands::Config(args)) => config::run_config(args),
         Some(Commands::Add) => add::stage_files(),
         Some(Commands::Rebase { interactive }) => rebase::run_rebase(*interactive),
+        Some(Commands::Stash(args)) => match args.command {
+            Some(StashCommands::Push) => stash::run_stash(true),
+            None => stash::run_stash(false),
+        },
         None => {
             Cli::command().print_help().unwrap();
             Ok(())
