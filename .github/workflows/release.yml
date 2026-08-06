@@ -41,8 +41,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.release.outputs.tag_name }}
-        run: |
-          gh release upload "$tag" \
-            --repo="$GITHUB_REPOSITORY" \
-            target\release\*.exe
+        run: gh release upload "$env:tag" --repo="$env:GITHUB_REPOSITORY" target\release\*.exe
     
