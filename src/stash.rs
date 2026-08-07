@@ -38,7 +38,6 @@ pub fn run_stash(push: bool) -> Result<(), String> {
         git_operations::push_stash(selected_files)
             .map_err(|e| format!("An error occurred during stash: {}", e))?;
         println!("✅ Stash successful!");
-    } else {
     }
     Ok(())
 }
