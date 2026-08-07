@@ -1,7 +1,7 @@
 use core::fmt;
 use crossterm::style::Stylize;
 use git2::{Repository, Status, StatusOptions};
-use std::{path::Path, process::Command};
+use std::{error::Error, path::Path, process::Command};
 
 #[derive(Clone)]
 pub struct Change {
@@ -72,6 +72,17 @@ pub fn get_log() -> Result<Vec<CommitLog>, String> {
         })
         .collect();
     Ok(commits)
+}
+
+pub fn push_stash(selected_files: Vec<Change>) -> Result<(), Box<dyn Error>> {
+    let paths: Vec<&String> = selected_files.iter().map(|change| &change.path).collect();
+    let _output = Command::new("git")
+        .arg("stash")
+        .arg("push")
+        .args(paths)
+        .output()
+        .map_err(|e| format!("Failed to stash files: {}", e))?;
+    Ok(())
 }
 
 pub fn get_branches() -> Result<Vec<BranchInfo>, git2::Error> {
