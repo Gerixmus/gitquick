@@ -1,4 +1,4 @@
-use inquire::MultiSelect;
+use inquire::{MultiSelect, Text};
 
 use crate::git_operations::{self, Change};
 
@@ -33,9 +33,13 @@ pub fn run_stash(push: bool) -> Result<(), String> {
             return Ok(());
         }
 
+        let user_input = Text::new("Enter commit message:")
+            .prompt()
+            .map_err(|e| format!("An error occurred: {}", e))?;
+
         selected_files.extend(selected_unstaged);
 
-        git_operations::push_stash(selected_files)
+        git_operations::push_stash(selected_files, &user_input)
             .map_err(|e| format!("An error occurred during stash: {}", e))?;
         println!("✅ Stash successful!");
     }

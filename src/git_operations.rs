@@ -74,12 +74,16 @@ pub fn get_log() -> Result<Vec<CommitLog>, String> {
     Ok(commits)
 }
 
-pub fn push_stash(selected_files: Vec<Change>) -> Result<(), Box<dyn Error>> {
+pub fn push_stash(selected_files: Vec<Change>, message: &str) -> Result<(), Box<dyn Error>> {
     let paths: Vec<&String> = selected_files.iter().map(|change| &change.path).collect();
-    let _output = Command::new("git")
-        .arg("stash")
-        .arg("push")
-        .args(paths)
+    let mut cmd = Command::new("git");
+    cmd.arg("stash").arg("push").args(paths);
+
+    if !message.is_empty() {
+        cmd.arg("--message").arg(message);
+    }
+
+    let _output = cmd
         .output()
         .map_err(|e| format!("Failed to stash files: {}", e))?;
     Ok(())
