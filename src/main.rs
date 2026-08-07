@@ -25,6 +25,7 @@ struct ConfigArgs {
 
 #[derive(Debug, Subcommand)]
 enum StashCommands {
+    #[command(about = "Save your local modifications to a new stash")]
     Push,
 }
 
@@ -71,7 +72,7 @@ enum Commands {
         )]
         interactive: bool,
     },
-    #[command(about = "todo")]
+    #[command(about = "Stash the changes in a dirty working directory away")]
     Stash(StashArgs),
 }
 
