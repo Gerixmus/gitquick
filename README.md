@@ -17,3 +17,19 @@
 ```
 cargo install gitquick
 ```
+
+## Configuration
+
+Use the following command to configure `gq`:
+
+```
+gq config <NAME> <VALUE>
+```
+
+### Options
+
+| NAME | VALUE | Description |
+| - | - | - |
+| `commit.conventional` | Bool | Enable [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Default is `false`. |
+| `commit.types` | Comma separated types | Types for conventional commits. Default is `build, ci, docs, feat, fix, perf, refactor, style, test, revert`. |
+| `commit.ticket` | Bool | Enable ticket number integration. Default is `false`. |
