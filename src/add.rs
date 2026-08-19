@@ -24,12 +24,7 @@ pub fn stage_files() -> Result<(), String> {
 
     selected_files.extend(selected_unstaged);
 
-    let mut index = repo
-        .index()
-        .map_err(|e| format!("Error accessing index: {}", e))?;
-
-    git_operations::add_files(selected_files, &mut index)
-        .map_err(|e| format!("Failed to add files: {}", e))?;
+    git_operations::add_files(selected_files).map_err(|e| format!("Failed to add files: {}", e))?;
 
     println!("✅ Added files successfuly!");
     Ok(())

@@ -1,7 +1,7 @@
 use core::fmt;
 use crossterm::style::Stylize;
 use git2::{Repository, Status, StatusOptions};
-use std::{error::Error, path::Path, process::Command};
+use std::{error::Error, process::Command};
 
 #[derive(Clone)]
 pub struct Change {
@@ -169,18 +169,18 @@ pub fn get_changes(repo: &Repository) -> (Vec<Change>, Vec<Change>) {
     (untracked, staged)
 }
 
-pub fn add_files(selected_files: Vec<Change>, index: &mut git2::Index) -> Result<(), git2::Error> {
-    for change in selected_files.iter() {
-        let path = Path::new(&change.path);
-        if change.status == Status::WT_DELETED {
-            index.remove_path(path)?;
-        } else {
-            index.add_path(path)?;
-        }
-    }
+pub fn add_files(selected_files: Vec<Change>) -> Result<(), Box<dyn Error>> {
+    let output = Command::new("git")
+        .arg("add")
+        .args(selected_files.iter().map(|f| &f.path))
+        .output()?;
 
-    index.write()?;
-    Ok(())
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        Err(Box::new(std::io::Error::other(err.to_string())))
+    } else {
+        Ok(())
+    }
 }
 
 pub fn commit(
