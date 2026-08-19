@@ -24,10 +24,6 @@ pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(),
         return Ok(());
     }
 
-    let index = repo
-        .index()
-        .map_err(|e| format!("Error accessing index: {}", e))?;
-
     let mut commit_header = if commit_config.conventional {
         let type_and_scope = get_type_and_scope(commit_config.types)
             .map_err(|e| format!("An error occurred: {}", e))
@@ -100,7 +96,7 @@ pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(),
         commit_amend(&message).map_err(|e| format!("❌ Commit failed: {}", e))?;
         println!("✅ Commit successful!");
     } else if should_commit {
-        commit(repo, index, message).map_err(|e| format!("❌ Commit failed: {}", e))?;
+        commit(message).map_err(|e| format!("❌ Commit failed: {}", e))?;
         println!("✅ Commit successful!");
     } else {
         println!("❌ Commit canceled or failed to get user confirmation.");

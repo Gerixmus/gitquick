@@ -183,30 +183,19 @@ pub fn add_files(selected_files: Vec<Change>) -> Result<(), Box<dyn Error>> {
     }
 }
 
-pub fn commit(
-    repo: git2::Repository,
-    mut index: git2::Index,
-    message: String,
-) -> Result<(), git2::Error> {
-    let signature = repo.signature()?;
-    let tree_oid = index.write_tree()?;
-    let tree = repo.find_tree(tree_oid)?;
-    let parent_commits: Vec<git2::Commit> = repo
-        .head()
-        .ok()
-        .and_then(|head| head.peel_to_commit().ok().map(|c| vec![c]))
-        .unwrap_or_default();
-    let parent_refs: Vec<&git2::Commit> = parent_commits.iter().collect();
-    repo.commit(
-        Some("HEAD"),
-        &signature,
-        &signature,
-        &message,
-        &tree,
-        &parent_refs,
-    )?;
+pub fn commit(message: String) -> Result<(), Box<dyn Error>> {
+    let output = Command::new("git")
+        .arg("commit")
+        .arg("-m")
+        .arg(message)
+        .output()?;
 
-    Ok(())
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        Err(Box::new(std::io::Error::other(err.to_string())))
+    } else {
+        Ok(())
+    }
 }
 
 pub fn commit_amend(message: &str) -> Result<(), Box<dyn std::error::Error>> {
