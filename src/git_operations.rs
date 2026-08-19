@@ -77,7 +77,10 @@ pub fn get_log() -> Result<Vec<CommitLog>, String> {
 pub fn push_stash(selected_files: Vec<Change>, message: &str) -> Result<(), Box<dyn Error>> {
     let paths: Vec<&String> = selected_files.iter().map(|change| &change.path).collect();
     let mut cmd = Command::new("git");
-    cmd.arg("stash").arg("push").args(paths);
+    cmd.arg("stash")
+        .arg("push")
+        .arg("--include-untracked")
+        .args(paths);
 
     if !message.is_empty() {
         cmd.arg("--message").arg(message);
