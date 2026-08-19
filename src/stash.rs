@@ -13,15 +13,6 @@ pub fn run_stash(push: bool) -> Result<(), String> {
             return Ok(());
         }
 
-        let repo = git_operations::get_repository().map_err(|e| e.to_string())?;
-
-        let (changes, _staged) = git_operations::get_changes(&repo);
-
-        if changes.is_empty() {
-            println!("No untracked or modified files found.");
-            return Ok(());
-        }
-
         let mut selected_files = Vec::<Change>::new();
 
         let selected_unstaged = MultiSelect::new("Select changes to stash:", changes)
@@ -33,7 +24,7 @@ pub fn run_stash(push: bool) -> Result<(), String> {
             return Ok(());
         }
 
-        let user_input = Text::new("Enter commit message:")
+        let user_input = Text::new("Enter stash message:")
             .prompt()
             .map_err(|e| format!("An error occurred: {}", e))?;
 
