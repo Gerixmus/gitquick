@@ -183,28 +183,16 @@ pub fn add_files(selected_files: Vec<Change>) -> Result<(), Box<dyn Error>> {
     }
 }
 
-pub fn commit(message: String) -> Result<(), Box<dyn Error>> {
-    let output = Command::new("git")
-        .arg("commit")
-        .arg("-m")
-        .arg(message)
-        .output()?;
+pub fn commit(message: &str, amend: bool) -> Result<(), Box<dyn Error>> {
+    let mut command = Command::new("git");
 
-    if !output.status.success() {
-        let err = String::from_utf8_lossy(&output.stderr);
-        Err(Box::new(std::io::Error::other(err.to_string())))
-    } else {
-        Ok(())
-    }
-}
+    command.arg("commit");
 
-pub fn commit_amend(message: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let output = Command::new("git")
-        .arg("commit")
-        .arg("--amend")
-        .arg("-m")
-        .arg(message)
-        .output()?;
+    if amend {
+        command.arg("--amend");
+    };
+
+    let output = command.arg("-m").arg(message).output()?;
 
     if !output.status.success() {
         let err = String::from_utf8_lossy(&output.stderr);

@@ -1,8 +1,6 @@
 use crate::{
     config::Commit,
-    git_operations::{
-        commit, commit_amend, get_changes, get_current_branch, get_log, get_repository,
-    },
+    git_operations::{commit, get_changes, get_current_branch, get_log, get_repository},
 };
 use crossterm::terminal;
 use inquire::{Confirm, Select, Text};
@@ -92,11 +90,8 @@ pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(),
         .prompt()
         .map_err(|e| format!("Failed to get confirmation: {}", e))?;
 
-    if should_commit && amend {
-        commit_amend(&message).map_err(|e| format!("❌ Commit failed: {}", e))?;
-        println!("✅ Commit successful!");
-    } else if should_commit {
-        commit(message).map_err(|e| format!("❌ Commit failed: {}", e))?;
+    if should_commit {
+        commit(&message, amend).map_err(|e| format!("❌ Commit failed: {}", e))?;
         println!("✅ Commit successful!");
     } else {
         println!("❌ Commit canceled or failed to get user confirmation.");
