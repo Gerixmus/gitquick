@@ -8,11 +8,6 @@ use regex::Regex;
 use std::{error::Error, process::Command};
 
 pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(), String> {
-    if fixup {
-        run_fixup()?;
-        return Ok(());
-    }
-
     let repo = get_repository().map_err(|e| e.to_string())?;
 
     let (_changes, staged) = get_changes(&repo);
@@ -20,6 +15,29 @@ pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(),
     if staged.is_empty() {
         println!("No staged files found.");
         return Ok(());
+    }
+
+    if fixup {
+        run_fixup()?;
+        return Ok(());
+    }
+
+    if amend {
+        let log = get_log()?;
+        if let Some(log) = log.first() {
+            print_in_box(&log.message).map_err(|e| format!("Formatting failed: {}", e))?;
+
+            let should_commit = Confirm::new("Commit with previous message?")
+                .with_default(true)
+                .prompt()
+                .map_err(|e| format!("Failed to get confirmation: {}", e))?;
+
+            if should_commit {
+                commit(&log.message, amend).map_err(|e| format!("❌ Commit failed: {}", e))?;
+                println!("✅ Commit successful!");
+                return Ok(());
+            }
+        }
     }
 
     let mut commit_header = if commit_config.conventional {
