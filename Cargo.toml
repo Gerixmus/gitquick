@@ -5,7 +5,7 @@ edition = "2021"
 license = "Apache-2.0"
 description = "Command line tool that simplifies common git workflows."
 homepage = "https://www.gitquick.dev/"
-repository = "https://github.com/Gerixmus/gitquick"
+repository = "https://github.com/gordziejonok/gitquick"
 readme = "README.md"
 
 [[bin]]
