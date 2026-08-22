@@ -7,6 +7,7 @@ mod commit;
 mod config;
 mod git_operations;
 mod rebase;
+mod reset;
 mod revert;
 mod stash;
 
@@ -74,6 +75,8 @@ enum Commands {
     },
     #[command(about = "Stash the changes in a dirty working directory away")]
     Stash(StashArgs),
+    #[command(about = "Reset")]
+    Reset,
 }
 
 fn main() {
@@ -96,6 +99,7 @@ fn main() {
             Some(StashCommands::Push) => stash::run_stash(true),
             None => stash::run_stash(false),
         },
+        Some(Commands::Reset) => reset::run_reset(),
         None => {
             Cli::command().print_help().unwrap();
             Ok(())
