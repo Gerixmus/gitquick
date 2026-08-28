@@ -25,17 +25,19 @@ pub fn run_checkout(create_new: bool) -> Result<(), String> {
         }
         Ok(())
     } else {
-        let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
-        let available_branches: Vec<&git_operations::BranchInfo> = branches
-            .iter()
-            .filter(|branch| !branch.is_current)
-            .collect();
+        use std::time::Instant;
+        let now = Instant::now();
 
+        let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
+        let available_branches = branches.iter().map(|b| b.trim()).filter(|b| !b.starts_with('*')).collect();
+        let elapsed = now.elapsed();
+        println!("Elapsed: {:.2?}", elapsed);
+ 
         let selected_branch = Select::new("Select branch to checkout", available_branches)
             .prompt()
             .map_err(|e| format!("Prompt error: {}", e))?;
 
-        git_operations::checkout_branch(&selected_branch.name).map_err(|e| e.to_string())?;
+        git_operations::checkout_branch(&selected_branch).map_err(|e| e.to_string())?;
 
         Ok(())
     }
