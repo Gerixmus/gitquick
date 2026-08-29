@@ -1,5 +1,4 @@
 use core::fmt;
-use crossterm::style::Stylize;
 use git2::{Repository, Status, StatusOptions};
 use std::{error::Error, process::Command};
 
@@ -79,7 +78,7 @@ pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
     let output_str = String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
     let branches: Vec<String> = output_str.lines().map(|branch| branch.to_owned()).collect();
 
-   Ok(branches)
+    Ok(branches)
 }
 
 #[allow(dead_code)]
