@@ -1,5 +1,4 @@
 use core::fmt;
-use crossterm::style::Stylize;
 use git2::{Repository, Status, StatusOptions};
 use std::{error::Error, process::Command};
 
@@ -29,29 +28,6 @@ impl fmt::Display for Change {
             _ => "?",
         };
         write!(f, "{}: {}", status_str, self.path)
-    }
-}
-
-pub struct BranchInfo {
-    pub name: String,
-    pub is_current: bool,
-    pub upstream: bool,
-}
-
-impl fmt::Display for BranchInfo {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let current_marker = if self.is_current { "* " } else { "  " };
-        let branch_name = if self.is_current {
-            self.name.clone().green().to_string()
-        } else {
-            self.name.to_string()
-        };
-        let upstream_marker = if self.upstream {
-            "".to_string()
-        } else {
-            " (no upstream)".red().to_string()
-        };
-        write!(f, "{}{}{}", current_marker, branch_name, upstream_marker)
     }
 }
 
@@ -92,30 +68,17 @@ pub fn push_stash(selected_files: Vec<Change>, message: &str) -> Result<(), Box<
     Ok(())
 }
 
-pub fn get_branches() -> Result<Vec<BranchInfo>, git2::Error> {
-    let repo = get_repository()?;
-    // if let Err(e) = fetch_with_prune() {
-    //     eprintln!("Fetch failed: {}", e);
-    // }
-    let branches = repo.branches(Some(git2::BranchType::Local))?;
-    let head = repo.head().ok();
-    let current_branch = head.and_then(|h| h.shorthand().map(|s| s.to_string()));
+pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
+    let output = Command::new("git")
+        .arg("--no-pager")
+        .arg("branch")
+        .output()
+        .map_err(|e| e.to_string())?;
 
-    let mut branch_list = Vec::new();
+    let output_str = String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
+    let branches: Vec<String> = output_str.lines().map(|branch| branch.to_owned()).collect();
 
-    for branch in branches {
-        let (branch, _) = branch?;
-        let name = branch.name()?.unwrap_or("Unnamed branch").to_string();
-        let upstream = branch.upstream().is_ok();
-
-        branch_list.push(BranchInfo {
-            is_current: Some(name.clone()) == current_branch,
-            name,
-            upstream,
-        });
-    }
-
-    Ok(branch_list)
+    Ok(branches)
 }
 
 #[allow(dead_code)]
