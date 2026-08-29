@@ -165,23 +165,15 @@ pub fn commit(message: &str, amend: bool) -> Result<(), Box<dyn Error>> {
     }
 }
 
-pub fn checkout_branch(branch: &str) -> Result<(), git2::Error> {
-    let repo = get_repository()?;
+pub fn checkout_branch(branch: &str) -> Result<(), Box<dyn Error>> {
+    let output = Command::new("git").arg("checkout").arg(branch).output()?;
 
-    let (object, reference) = repo.revparse_ext(branch)?;
-
-    repo.checkout_tree(&object, None)?;
-
-    if let Some(reference) = reference {
-        let reference_name = reference
-            .name()
-            .ok_or_else(|| git2::Error::from_str("Invalid branch reference"))?;
-        repo.set_head(reference_name)?;
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        Err(Box::new(std::io::Error::other(err.to_string())))
     } else {
-        repo.set_head_detached(object.id())?;
+        Ok(())
     }
-
-    Ok(())
 }
 
 pub fn get_current_branch() -> Result<String, git2::Error> {
