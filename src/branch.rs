@@ -2,16 +2,10 @@ use std::process::Command;
 
 use inquire::{Confirm, MultiSelect};
 
+use crate::git_operations;
+
 pub fn run_branch(delete: bool, force_delete: bool) -> Result<(), String> {
-    let output = Command::new("git")
-        .arg("--no-pager")
-        .arg("branch")
-        .output()
-        .map_err(|e| e.to_string())?;
-
-    let output_str = String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
-    let branches: Vec<String> = output_str.lines().map(|branch| branch.to_owned()).collect();
-
+    let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
     if delete || force_delete {
         let branches: Vec<String> = branches
             .into_iter()

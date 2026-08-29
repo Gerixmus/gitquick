@@ -25,13 +25,8 @@ pub fn run_checkout(create_new: bool) -> Result<(), String> {
         }
         Ok(())
     } else {
-        use std::time::Instant;
-        let now = Instant::now();
-
         let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
         let available_branches = branches.iter().map(|b| b.trim()).filter(|b| !b.starts_with('*')).collect();
-        let elapsed = now.elapsed();
-        println!("Elapsed: {:.2?}", elapsed);
  
         let selected_branch = Select::new("Select branch to checkout", available_branches)
             .prompt()
