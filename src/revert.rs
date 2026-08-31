@@ -1,8 +1,6 @@
-use std::process::Command;
-
 use inquire::{Confirm, Select};
 
-use crate::git_operations::get_log;
+use crate::git_operations::{commit, get_log, revert};
 
 pub fn run_revert() -> Result<(), String> {
     let commits = get_log()?;
@@ -22,18 +20,8 @@ pub fn run_revert() -> Result<(), String> {
         .map_err(|e| format!("Failed to get confirmation: {}", e))?;
 
     if should_commit {
-        Command::new("git")
-            .arg("revert")
-            .arg("--no-commit")
-            .arg(&selected_commit.hash)
-            .output()
-            .map_err(|e| format!("Failed to revert: {}", e))?;
-        Command::new("git")
-            .arg("commit")
-            .arg("-m")
-            .arg(message)
-            .output()
-            .map_err(|e| format!("Failed to commit: {}", e))?;
+        revert(&selected_commit.hash).map_err(|e| format!("Failed to revert: {}", e))?;
+        commit(&message, false).map_err(|e| format!("Failed to commit: {}", e))?;
         println!("✅ Revert successful!");
     } else {
         println!("❌ Revert canceled or failed to get user confirmation.");
