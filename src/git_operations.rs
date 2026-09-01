@@ -70,7 +70,7 @@ pub fn push_stash(selected_files: Vec<Change>, message: &str) -> Result<(), Box<
 
 pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
     let output = Command::new("git")
-        .arg("--no-pager")
+        .arg("-a")
         .arg("branch")
         .output()
         .map_err(|e| e.to_string())?;
