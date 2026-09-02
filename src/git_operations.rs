@@ -69,11 +69,21 @@ pub fn push_stash(selected_files: Vec<Change>, message: &str) -> Result<(), Box<
 }
 
 pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
+    let git_format = "%(refname:short)%00%(upstream:short)%00%(HEAD)";
     let output = Command::new("git")
-        .arg("--no-pager")
-        .arg("branch")
+        .arg("for-each-ref")
+        .arg(format!("--format={}", git_format))
+        .arg("refs/heads/")
+        .arg("refs/remotes/")
         .output()
         .map_err(|e| e.to_string())?;
+    
+    // let output = Command::new("git")
+    //     .arg("--no-pager")
+    //     .arg("branch")
+    //     .arg("-a")
+    //     .output()
+    //     .map_err(|e| e.to_string())?;
 
     let output_str = String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
     let branches: Vec<String> = output_str.lines().map(|branch| branch.to_owned()).collect();
