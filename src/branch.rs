@@ -2,16 +2,12 @@ use std::process::Command;
 
 use inquire::{Confirm, MultiSelect};
 
-use crate::git_operations;
+use crate::git_operations::{self, Branch};
 
 pub fn run_branch(delete: bool, force_delete: bool) -> Result<(), String> {
     let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
     if delete || force_delete {
-        let branches: Vec<String> = branches
-            .into_iter()
-            .filter(|line| !line.trim().starts_with("*"))
-            .map(|branch| branch.trim().to_owned())
-            .collect();
+        let branches: Vec<Branch> = branches.into_iter().filter(|branch| !branch.head).collect();
 
         let selected_branches = MultiSelect::new("Select branches to delete", branches)
             .prompt()
@@ -29,7 +25,7 @@ pub fn run_branch(delete: bool, force_delete: bool) -> Result<(), String> {
                 let status = Command::new("git")
                     .arg("branch")
                     .arg(flag)
-                    .arg(branch)
+                    .arg(&branch.name)
                     .status()
                     .map_err(|e| e.to_string())?;
 
