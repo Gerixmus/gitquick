@@ -28,15 +28,14 @@ pub fn run_checkout(create_new: bool) -> Result<(), String> {
         let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
         let available_branches = branches
             .iter()
-            .map(|b| b.trim())
-            .filter(|b| !b.starts_with('*'))
+            .filter(|b| !b.head)
             .collect();
 
         let selected_branch = Select::new("Select branch to checkout", available_branches)
             .prompt()
             .map_err(|e| format!("Prompt error: {}", e))?;
 
-        git_operations::checkout_branch(selected_branch).map_err(|e| e.to_string())?;
+        git_operations::checkout_branch(&selected_branch.name).map_err(|e| e.to_string())?;
 
         Ok(())
     }

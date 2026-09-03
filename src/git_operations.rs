@@ -74,7 +74,17 @@ pub struct Branch {
     pub head: bool,
 }
 
-pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
+impl fmt::Display for Branch {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.name)?;
+        if let Some(upstream) = &self.upstream {
+            write!(f, " [{}]", upstream)?;
+        }
+        Ok(())
+    }
+}
+
+pub fn get_branches() -> Result<Vec<Branch>, Box<dyn Error>> {
     let git_format = "%(refname:short)%00%(upstream:short)%00%(HEAD)";
     let output = Command::new("git")
         .arg("for-each-ref")
@@ -91,12 +101,8 @@ pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
             upstream: (!info[1].is_empty()).then(|| info[1].to_owned()),
             head: info[2].is_empty(),
         };
-
         return branch;
     }).collect();
-
-    let branches: Vec<String> = branches.iter().map(|b| b.name.clone()).collect();
-    
     Ok(branches)
 }
 
