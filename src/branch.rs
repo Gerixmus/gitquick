@@ -7,10 +7,7 @@ use crate::git_operations::{self, Branch};
 pub fn run_branch(delete: bool, force_delete: bool) -> Result<(), String> {
     let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
     if delete || force_delete {
-        let branches: Vec<Branch> = branches
-            .into_iter()
-            .filter(|branch| !branch.head)
-            .collect();
+        let branches: Vec<Branch> = branches.into_iter().filter(|branch| !branch.head).collect();
 
         let selected_branches = MultiSelect::new("Select branches to delete", branches)
             .prompt()

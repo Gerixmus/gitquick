@@ -26,10 +26,7 @@ pub fn run_checkout(create_new: bool) -> Result<(), String> {
         Ok(())
     } else {
         let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
-        let available_branches = branches
-            .iter()
-            .filter(|b| !b.head)
-            .collect();
+        let available_branches = branches.iter().filter(|b| !b.head).collect();
 
         let selected_branch = Select::new("Select branch to checkout", available_branches)
             .prompt()

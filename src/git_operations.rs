@@ -94,15 +94,17 @@ pub fn get_branches() -> Result<Vec<Branch>, Box<dyn Error>> {
         .output()?;
 
     let output_str = String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
-    let branches: Vec<Branch> = output_str.lines().map(|l| {
-        let info: Vec<&str> = l.split("\0").collect();
-        let branch = Branch {
-            name: info[0].to_owned(),
-            upstream: (!info[1].is_empty()).then(|| info[1].to_owned()),
-            head: info[2].is_empty(),
-        };
-        return branch;
-    }).collect();
+    let branches: Vec<Branch> = output_str
+        .lines()
+        .map(|l| {
+            let info: Vec<&str> = l.split("\0").collect();
+            Branch {
+                name: info[0].to_owned(),
+                upstream: (!info[1].is_empty()).then(|| info[1].to_owned()),
+                head: info[2].is_empty(),
+            }
+        })
+        .collect();
     Ok(branches)
 }
 
