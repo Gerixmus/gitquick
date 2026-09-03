@@ -68,6 +68,12 @@ pub fn push_stash(selected_files: Vec<Change>, message: &str) -> Result<(), Box<
     Ok(())
 }
 
+pub struct Branch {
+    pub name: String,
+    pub upstream: Option<String>,
+    pub head: bool,
+}
+
 pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
     let git_format = "%(refname:short)%00%(upstream:short)%00%(HEAD)";
     let output = Command::new("git")
@@ -75,19 +81,22 @@ pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
         .arg(format!("--format={}", git_format))
         .arg("refs/heads/")
         .arg("refs/remotes/")
-        .output()
-        .map_err(|e| e.to_string())?;
-    
-    // let output = Command::new("git")
-    //     .arg("--no-pager")
-    //     .arg("branch")
-    //     .arg("-a")
-    //     .output()
-    //     .map_err(|e| e.to_string())?;
+        .output()?;
 
     let output_str = String::from_utf8(output.stdout).map_err(|e| e.to_string())?;
-    let branches: Vec<String> = output_str.lines().map(|branch| branch.to_owned()).collect();
+    let branches: Vec<Branch> = output_str.lines().map(|l| {
+        let info: Vec<&str> = l.split("\0").collect();
+        let branch = Branch {
+            name: info[0].to_owned(),
+            upstream: (!info[1].is_empty()).then(|| info[1].to_owned()),
+            head: info[2].is_empty(),
+        };
 
+        return branch;
+    }).collect();
+
+    let branches: Vec<String> = branches.iter().map(|b| b.name.clone()).collect();
+    
     Ok(branches)
 }
 
