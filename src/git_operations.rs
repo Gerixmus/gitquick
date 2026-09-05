@@ -112,10 +112,20 @@ pub fn get_branches() -> Result<Vec<Branch>, Box<dyn Error>> {
     let binding = String::from_utf8(head_out.stdout)?;
     let head = binding.trim();
 
-    let git_format = format!(
-        "%(refname:short)%00%(upstream:short)%00%(ahead-behind:{})%00%(HEAD)",
-        head
-    );
+    let ahead_behind = format!("(ahead-behind:{})", head);
+
+    let field_names = [
+        "(refname:short)",
+        "(upstream:short)",
+        &ahead_behind,
+        "(HEAD)",
+    ];
+
+    let git_format = field_names
+        .iter()
+        .map(|f| format!("%{}", f))
+        .collect::<Vec<String>>()
+        .join("%00");
 
     let output = Command::new("git")
         .arg("for-each-ref")
