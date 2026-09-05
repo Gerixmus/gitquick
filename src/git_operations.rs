@@ -70,7 +70,9 @@ pub fn push_stash(selected_files: Vec<Change>, message: &str) -> Result<(), Box<
 
 pub struct Branch {
     pub name: String,
+    #[allow(dead_code)]
     pub upstream: Option<String>,
+    pub gone: bool,
     pub head: bool,
     pub ahead: u16,
     pub behind: u16,
@@ -92,8 +94,8 @@ impl fmt::Display for Branch {
             }
         }
 
-        if let Some(upstream) = &self.upstream {
-            write!(f, " [{}]", upstream)?;
+        if self.gone {
+            write!(f, " [gone]")?;
         }
         Ok(())
     }
@@ -112,18 +114,19 @@ pub fn get_branches() -> Result<Vec<Branch>, Box<dyn Error>> {
     let binding = String::from_utf8(head_out.stdout)?;
     let head = binding.trim();
 
-    let ahead_behind = format!("(ahead-behind:{})", head);
+    let ahead_behind = format!("ahead-behind:{}", head);
 
     let field_names = [
-        "(refname:short)",
-        "(upstream:short)",
+        "refname:short",
+        "upstream:short",
+        "upstream:track,nobracket",
         &ahead_behind,
-        "(HEAD)",
+        "HEAD",
     ];
 
     let git_format = field_names
         .iter()
-        .map(|f| format!("%{}", f))
+        .map(|f| format!("%({})", f))
         .collect::<Vec<String>>()
         .join("%00");
 
@@ -140,13 +143,14 @@ pub fn get_branches() -> Result<Vec<Branch>, Box<dyn Error>> {
         .lines()
         .map(|l| {
             let info: Vec<&str> = l.split("\0").collect();
-            let (ahead, behind) = info[2].split_once(" ").unwrap();
+            let (ahead, behind) = info[3].split_once(" ").unwrap();
             Branch {
                 name: info[0].to_owned(),
                 upstream: (!info[1].is_empty()).then(|| info[1].to_owned()),
+                gone: info[2] == "gone",
                 ahead: ahead.parse().unwrap_or_default(),
                 behind: behind.parse().unwrap_or_default(),
-                head: info[3].is_empty(),
+                head: info[4].is_empty(),
             }
         })
         .collect();
