@@ -72,11 +72,26 @@ pub struct Branch {
     pub name: String,
     pub upstream: Option<String>,
     pub head: bool,
+    pub ahead: u16,
+    pub behind: u16,
 }
 
 impl fmt::Display for Branch {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.name)?;
+
+        if self.ahead != 0 || self.behind != 0 {
+            write!(f, " ")?;
+
+            if self.ahead != 0 {
+                write!(f, "↑{}", self.ahead)?;
+            }
+
+            if self.behind != 0 {
+                write!(f, "↓{}", self.behind)?;
+            }
+        }
+
         if let Some(upstream) = &self.upstream {
             write!(f, " [{}]", upstream)?;
         }
@@ -85,10 +100,27 @@ impl fmt::Display for Branch {
 }
 
 pub fn get_branches() -> Result<Vec<Branch>, Box<dyn Error>> {
-    let git_format = "%(refname:short)%00%(upstream:short)%00%(HEAD)";
+    let head_out = Command::new("git")
+        .arg("symbolic-ref")
+        .arg("refs/remotes/origin/HEAD")
+        .output()?;
+
+    if !head_out.status.success() {
+        return Err(String::from_utf8_lossy(&head_out.stderr).into());
+    }
+
+    let binding = String::from_utf8(head_out.stdout)?;
+    let head = binding.trim();
+
+    let git_format = format!(
+        "%(refname:short)%00%(upstream:short)%00%(ahead-behind:{})%00%(HEAD)",
+        head
+    );
+
     let output = Command::new("git")
         .arg("for-each-ref")
-        .arg(format!("--format={}", git_format))
+        .arg("--format")
+        .arg(git_format)
         .arg("refs/heads/")
         .arg("refs/remotes/")
         .output()?;
@@ -98,10 +130,13 @@ pub fn get_branches() -> Result<Vec<Branch>, Box<dyn Error>> {
         .lines()
         .map(|l| {
             let info: Vec<&str> = l.split("\0").collect();
+            let (ahead, behind) = info[2].split_once(" ").unwrap();
             Branch {
                 name: info[0].to_owned(),
                 upstream: (!info[1].is_empty()).then(|| info[1].to_owned()),
-                head: info[2].is_empty(),
+                ahead: ahead.parse().unwrap_or_default(),
+                behind: behind.parse().unwrap_or_default(),
+                head: info[3].is_empty(),
             }
         })
         .collect();
