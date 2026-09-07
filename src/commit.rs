@@ -140,7 +140,7 @@ fn run_fixup() -> Result<(), String> {
     Ok(())
 }
 
-fn print_in_box(message: &str) -> Result<(), Box<dyn Error>> {
+pub fn print_in_box(message: &str) -> Result<(), Box<dyn Error>> {
     let lines: Vec<&str> = message.lines().collect();
     let mut max_len = lines.iter().map(|line| line.len()).max().unwrap_or(0);
     let (width, _) = terminal::size()?;

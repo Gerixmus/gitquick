@@ -1,6 +1,9 @@
 use inquire::{Confirm, Select};
 
-use crate::git_operations::{commit, get_log, revert};
+use crate::{
+    commit::print_in_box,
+    git_operations::{commit, get_log, revert},
+};
 
 pub fn run_revert() -> Result<(), String> {
     let commits = get_log()?;
@@ -12,7 +15,7 @@ pub fn run_revert() -> Result<(), String> {
         "revert: \"{}\"\nThis reverts commit: {}",
         selected_commit.message, selected_commit.hash
     );
-    print_in_box(&message);
+    print_in_box(&message).map_err(|e| format!("Formatting failed: {}", e))?;
 
     let should_commit = Confirm::new("Revert?")
         .with_default(true)
@@ -28,15 +31,4 @@ pub fn run_revert() -> Result<(), String> {
     }
 
     Ok(())
-}
-
-fn print_in_box(message: &str) {
-    let lines: Vec<&str> = message.lines().collect();
-    let max_len = lines.iter().map(|line| line.len()).max().unwrap_or(0);
-
-    println!("┌{}┐", "─".repeat(max_len + 2));
-    for line in lines {
-        println!("│ {:width$} │", line, width = max_len);
-    }
-    println!("└{}┘", "─".repeat(max_len + 2));
 }
