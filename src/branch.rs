@@ -1,8 +1,6 @@
-use std::process::Command;
-
 use inquire::{Confirm, MultiSelect};
 
-use crate::git_operations::{self, Branch};
+use crate::git_operations::{self, delete_branch, Branch};
 
 pub fn run_branch(delete: bool, force_delete: bool) -> Result<(), String> {
     let branches = git_operations::get_branches().map_err(|e| e.to_string())?;
@@ -21,20 +19,10 @@ pub fn run_branch(delete: bool, force_delete: bool) -> Result<(), String> {
             .map_err(|e| format!("Failed to get confirmation: {}", e))?;
 
         if should_delete {
-            selected_branches.iter().try_for_each(|branch| {
-                let status = Command::new("git")
-                    .arg("branch")
-                    .arg(flag)
-                    .arg(&branch.name)
-                    .status()
-                    .map_err(|e| e.to_string())?;
-
-                if !status.success() {
-                    Err(format!("Failed to delete branch: {}", branch))
-                } else {
-                    Ok(())
-                }
-            })?;
+            for branch in selected_branches {
+                delete_branch(&branch.name, flag)
+                    .map_err(|e| format!("Failed to delete branch: {}", e))?;
+            }
         } else {
             println!("❌ Commit canceled or failed to get user confirmation.");
         }
