@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2](https://github.com/gordziejonok/gitquick/compare/v0.3.1...v0.3.2) (2026-09-08)
+
+
+### Features
+
+* add ahead and behind information for branches ([#99](https://github.com/gordziejonok/gitquick/issues/99)) ([b69e37f](https://github.com/gordziejonok/gitquick/commit/b69e37f1c4f598792e02cec926201ce4bf95a214))
+* add gone information for branches ([#102](https://github.com/gordziejonok/gitquick/issues/102)) ([47b0417](https://github.com/gordziejonok/gitquick/commit/47b0417afe09a0afb3717f16c36d148557b73e4a))
+
 ## [0.3.1](https://github.com/gordziejonok/gitquick/compare/v0.3.0...v0.3.1) (2026-08-20)
 
 
