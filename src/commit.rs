@@ -1,11 +1,13 @@
 use crate::{
     config::Commit,
-    git_operations::{commit, get_changes, get_current_branch, get_log, get_repository},
+    git_operations::{
+        commit, commit_fixup, get_changes, get_current_branch, get_log, get_repository,
+    },
 };
 use crossterm::terminal;
 use inquire::{Confirm, Select, Text};
 use regex::Regex;
-use std::{error::Error, process::Command};
+use std::error::Error;
 
 pub fn run_commit(commit_config: Commit, fixup: bool, amend: bool) -> Result<(), String> {
     let repo = get_repository().map_err(|e| e.to_string())?;
@@ -124,18 +126,7 @@ fn run_fixup() -> Result<(), String> {
     let selected_commit = Select::new("Select commit to fixup:", commits)
         .prompt()
         .map_err(|e| format!("Failed to fixup commit: {}", e))?;
-    let fixup_output = Command::new("git")
-        .arg("commit")
-        .arg("--fixup")
-        .arg(selected_commit.hash)
-        .output()
-        .map_err(|e| format!("Failed to fixup commit: {}", e))?;
-    if !fixup_output.status.success() {
-        return Err(format!(
-            "git commit --fixup failed:\n{}",
-            String::from_utf8_lossy(&fixup_output.stdout)
-        ));
-    }
+    commit_fixup(&selected_commit.hash).map_err(|e| format!("❌ Commit failed: {}", e))?;
     println!("✅ Fixup successful!");
     Ok(())
 }
