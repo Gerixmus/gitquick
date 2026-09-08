@@ -222,6 +222,21 @@ pub fn add_files(selected_files: Vec<Change>) -> Result<(), Box<dyn Error>> {
     }
 }
 
+pub fn delete_branch(name: &str, flag: &str) -> Result<(), Box<dyn Error>> {
+    let output = Command::new("git")
+        .arg("branch")
+        .arg(flag)
+        .arg(name)
+        .output()?;
+
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        Err(Box::new(std::io::Error::other(err.to_string())))
+    } else {
+        Ok(())
+    }
+}
+
 pub fn commit(message: &str, amend: bool) -> Result<(), Box<dyn Error>> {
     let mut command = Command::new("git");
 
