@@ -256,6 +256,21 @@ pub fn commit(message: &str, amend: bool) -> Result<(), Box<dyn Error>> {
     }
 }
 
+pub fn commit_fixup(hash: &str) -> Result<(), Box<dyn Error>> {
+    let output = Command::new("git")
+        .arg("commit")
+        .arg("--fixup")
+        .arg(hash)
+        .output()?;
+
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        Err(Box::new(std::io::Error::other(err.to_string())))
+    } else {
+        Ok(())
+    }
+}
+
 pub fn revert(hash: &str) -> Result<(), Box<dyn Error>> {
     let output = Command::new("git")
         .arg("revert")
